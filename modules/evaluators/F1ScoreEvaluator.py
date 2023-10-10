@@ -78,14 +78,14 @@ class F1ScoreEvaluator(BaseEvaluator):
         return self.compute_score(y_test_user_recall, y_test_user_unpopular, y_hat_user)
 
     def score(
-        self, model: BaseEmbeddingModel, reduction="mean", verbose=True
+        self, model: BaseEmbeddingModel, reduction="mean", no_progressbar=False
     ) -> pd.DataFrame:
         """Method of calculating average score for all users.
 
         Args:
             model (BaseEmbeddingModel): models which have user and item embeddings.
             reduction (str, optional): reduction method. Defaults to "mean".
-            verbose (bool, optional): displaying progress bar or not during evaluating. Defaults to True.
+            no_progressbar (bool, optional): displaying progress bar or not during evaluating. Defaults to False.
 
         Returns:
             pd.DataFrame: a row of DataFrame which has average scores
@@ -94,14 +94,9 @@ class F1ScoreEvaluator(BaseEvaluator):
         users = torch.unique(self.test_set[:, 0])
         df_eval = pd.DataFrame({name: [] for name in self.metrics_names})
 
-        if verbose:
-            for uid in tqdm(users):
-                df_eval_sub = self.eval_user(model, uid)
-                df_eval = pd.concat([df_eval, df_eval_sub])
-        else:
-            for uid in users:
-                df_eval_sub = self.eval_user(model, uid)
-                df_eval = pd.concat([df_eval, df_eval_sub])
+        for uid in tqdm(users, no_progressbar=False):
+            df_eval_sub = self.eval_user(model, uid)
+            df_eval = pd.concat([df_eval, df_eval_sub])
 
         if reduction == "mean":
             score = pd.DataFrame(df_eval.mean(axis=0)).T

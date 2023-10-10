@@ -52,13 +52,13 @@ class CoverageEvaluator(BaseEvaluator):
         return item_set
 
     def score(
-        self, model: BaseEmbeddingModel, verbose=True
+        self, model: BaseEmbeddingModel, no_progressbar=False
     ) -> pd.DataFrame:
         """Method of computing catalogue coverage for recommendations across all users.
 
         Args:
             model (BaseEmbeddingModel): models which have user and item embeddings.
-            verbose (bool, optional): displaying progress bar or not during evaluating. Defaults to True.
+            no_progressbar (bool, optional): displaying progress bar or not during evaluating. Defaults to False.
 
         Returns:
             pd.DataFrame: a row of DataFrame which has catalogue coverage
@@ -74,12 +74,8 @@ class CoverageEvaluator(BaseEvaluator):
             recommended_items = set()
 
             # Calculate the recommended item sets for each user and compute their union
-            if verbose:
-                for uid in tqdm(users):
-                    recommended_items |= self.item_set_per_user(model, uid, k)
-            else:
-                for uid in users:
-                    recommended_items |= self.item_set_per_user(model, uid, k)
+            for uid in tqdm(users, no_progressbar=False):
+                recommended_items |= self.item_set_per_user(model, uid, k)
 
             recommended_items_num = len(recommended_items)
             catalog_coverage = recommended_items_num / all_items_num

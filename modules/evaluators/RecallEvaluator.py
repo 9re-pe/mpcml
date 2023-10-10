@@ -95,7 +95,7 @@ class RecallEvaluator(BaseEvaluator):
         Args:
             model (BaseEmbeddingModel): models which have user and item embeddings.
             reduction (str, optional): reduction method. Defaults to "mean".
-            verbose (bool, optional): displaying progress bar or not during evaluating. Defaults to True.
+            no_progressbar (bool, optional): displaying progress bar or not during evaluating. Defaults to False.
 
         Returns:
             pd.DataFrame: a row of DataFrame which has average scores

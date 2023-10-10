@@ -44,30 +44,24 @@ class HubnessEvaluator(BaseEvaluator):
 
         return items
 
-    def get_k_occurrence(self, model: BaseEmbeddingModel, users, k, verbose=True):
+    def get_k_occurrence(self, model: BaseEmbeddingModel, users, k, no_progressbar=False):
         k_occurrence = defaultdict(int)
-        if verbose:
-            for uid in tqdm(users):
-                items = self.get_topk_items(model, uid, k)
-                for item_id in items:
-                    k_occurrence[item_id] += 1
-        else:
-            for uid in users:
-                items = self.get_topk_items(model, uid, k)
-                for item_id in items:
-                    k_occurrence[item_id] += 1
+        for uid in tqdm(users, disable=no_progressbar):
+            items = self.get_topk_items(model, uid, k)
+            for item_id in items:
+                k_occurrence[item_id] += 1
 
         return k_occurrence
 
     def score(
-            self, model: BaseEmbeddingModel, reduction="mean", verbose=True
+            self, model: BaseEmbeddingModel, reduction="mean", no_progressbar=False
     ) -> pd.DataFrame:
         """Method of computing hubness for recommendations across all users.
 
         Args:
             model (BaseEmbeddingModel): models which have user and item embeddings.
             reduction (str, optional): reduction method. Defaults to "mean".
-            verbose (bool, optional): displaying progress bar or not during evaluating. Defaults to True.
+            no_progressbar (bool, optional): displaying progress bar or not during evaluating. Defaults to False.
 
         Returns:
             pd.DataFrame: a row of DataFrame which has average scores

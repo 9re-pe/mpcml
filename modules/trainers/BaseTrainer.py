@@ -19,6 +19,7 @@ class BaseTrainer:
         optimizer: optim,
         criterion: BaseLoss,
         sampler: BaseSampler,
+        no_progressbar: bool = False,
         column_names: Optional[dict] = None,
     ):
         """Set components for learning recommend system.
@@ -28,12 +29,14 @@ class BaseTrainer:
             optimizer (optim): pytorch optimizer
             criterion (Union[BasePairwiseLoss, BaseTripletLoss]): losses function
             sampler (BaseSampler): samplers
+            no_progressbar (bool, optional): displaying progress bar or not during evaluating. Defaults to False.
             column_names (Optional[dict]): samplers
         """
         self.model = model
         self.optimizer = optimizer
         self.criterion = criterion
         self.sampler = sampler
+        self.no_progressbar = no_progressbar
 
         if column_names is not None:
             self.column_names = column_names
@@ -60,7 +63,7 @@ class BaseTrainer:
             accum_loss = 0
 
             # start epoch
-            with tqdm(range(n_batch), total=n_batch) as pbar:
+            with tqdm(range(n_batch), total=n_batch, disable=self.no_progressbar) as pbar:
                 for b in pbar:
                     # batch sampling
                     batch = self.sampler.get_pos_batch()
