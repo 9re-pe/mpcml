@@ -1,0 +1,12 @@
+.ipynb_checkpoints
+*.xml
+/.DS_Store
+/.idea
+
+# データセット
+/data/*
+!/data/.gitkeep
+
+# ドキュメント
+/docs/*
+!/docs/.gitkeep
