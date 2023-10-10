@@ -11,81 +11,94 @@ class BaseDataset:
         self.pos_pairs = None
         self.n_user = None
         self.n_item = None
-        self.DIR_NAME = '../../../data/'
+        self.DIR_NAME = '../../data/'
+
+    @staticmethod
+    def preprocess(df_rating):
+        """Preprocessing for explicit feedback data
+
+        Args:
+            df_rating (Pandas DataFrame): explicit feedback data
+        """
+
+        # convert rating to implicit feedback
+        df_rating["rating"] = (df_rating["rating"] >= 4.0).astype(int)
+        pos_pairs = df_rating[df_rating["rating"] == 1].copy()
+
+        # Users who have less than 4 ratings are only included in the train/test set.
+        user_feedback_cnt = pos_pairs['user_id'].value_counts()
+        filter_idx = user_feedback_cnt[user_feedback_cnt >= 4].index
+        pos_pairs = pos_pairs[pos_pairs['user_id'].isin(filter_idx)]
+
+        # ignore users or items that have no implicit feedback
+        pos_pairs['user_id'] = pd.factorize(pos_pairs['user_id'])[0]
+        pos_pairs['item_id'] = pd.factorize(pos_pairs['item_id'])[0]
+
+        return pos_pairs
+
+    def set_values(self, pos_pairs):
+        """set instance variables
+
+        Args:
+            pos_pairs (Pandas DataFrame): preprocessed implicit feedback data
+        """
+
+        self.pos_pairs = pos_pairs
+        self.n_user = pos_pairs.user_id.nunique()
+        self.n_item = pos_pairs.item_id.nunique()
 
     def get_train_and_test_set(
             self,
-            use_nagative_sampling: bool = False,
-            use_popularity: bool = True,
             neg_pair_weight: int = 10,
             popular_threshold: int = 20
     ):
         """Convert explicit feedback data to implicit feedback data
 
         Args:
-            strict_negative: ネガティブとしてサンプリングされるペアの中に本当はポジティブなものがあってもよいか
-            neg_item_weight: ポジティブなペアのneg_item_weight倍の数のネガティブアイテムをサンプリングする
-            tail_threshold (int): The threshold for popular items and tail items (%).
-                                  If you don't have to use UnpopularEvaluator, give 0.
+            neg_pair_weight: Samples X times more negative pairs than positive pairs per user for test data.
+            popular_threshold: Labels items below the top X% as 'tail' items.
         Returns:
             train_set (Numpy array): user_id and positive item_id pair for training [n_train_samples, 2]
-            test_set (Numpy array): user_id, item_id, rating(0, 1) for test (removed train pair) [n_test_samples, 3]
+            test_set (Numpy array): user_id, item_id, rating, tail for test [n_test_samples, 4]
         """
-        # train test split (75:25)
-        train, test = train_test_split(self.pos_pairs)
 
-        if use_nagative_sampling:
-            pos_pairs_set = set(zip(self.pos_pairs['user_id'], self.pos_pairs['item_id']))
-            n_negative_samples = len(test) * neg_pair_weight
+        df_group_by_user = self.pos_pairs.groupby('user_id')
+        li_df_train = []
+        li_df_test = []
+        pos_pairs_set = set(zip(self.pos_pairs['user_id'], self.pos_pairs['item_id']))
 
+        for user_id, df_group in df_group_by_user:
+            # train test split (75:25)
+            df_train, df_test = train_test_split(df_group)
+            li_df_train.append(df_train)
+            li_df_test.append(df_test)
+
+            # negative sampling for test set
+            n_negative_samples = len(df_test) * neg_pair_weight
             negative_pairs = []
             sample_cnt = 0
             while sample_cnt < n_negative_samples:
-                sample_pair = (randint(0, self.n_user - 1), randint(0, self.n_item - 1))
-                if sample_pair in pos_pairs_set:
+                sampled_pair = (user_id, randint(0, self.n_item - 1))
+                if sampled_pair in pos_pairs_set:
                     continue
-                df_negative_pairs = pd.DataFrame(negative_pairs, columns=['user_id', 'item_id'])
-                df_negative_pairs['raiting'] = 0
-                test = pd.concat([test, df_negative_pairs], ignore_index=True)
+                negative_pairs.append(sampled_pair)
+                sample_cnt += 1
+            df_negative_pairs = pd.DataFrame(negative_pairs, columns=['user_id', 'item_id'])
+            df_negative_pairs['rating'] = 0
+            li_df_test.append(df_negative_pairs)
 
-        else:
-            # all user item pairs
-            df_all = pd.DataFrame(
-                [[u, i] for u, i in product(range(self.n_user), range(self.n_item))],
-                columns=["user_id", "item_id"]
-            )
+        train = pd.concat(li_df_train)
+        test = pd.concat(li_df_test)
 
-            # join train feedback data
-            df_all = pd.merge(
-                df_all,
-                train[["user_id", "item_id", "rating"]],
-                on=["user_id", "item_id"],
-                how="left"
-            )
-
-            # remove train pairs
-            test = pd.merge(
-                df_all[df_all.rating.isna()][["user_id", "item_id"]],
-                test[["user_id", "item_id", "rating"]],
-                on=["user_id", "item_id"],
-                how="left"
-            ).fillna(0)
-
-        # Create a 'tail' column for test set. 0 if the item is in the top X%, 1 otherwise.
-        if use_popularity:
-            popularity_sorted = self.item_popularity_data().sort_values(by="feedback_num", ascending=False)
-
-            top_20_percent_idx = int(popular_threshold * len(popularity_sorted) / 100)
-            popular_items = set(popularity_sorted.iloc[:top_20_percent_idx]['item_id'])
-
-            test['tail'] = np.where(test['item_id'].isin(popular_items), 0, 1)
+        # add a 'tail' column to test set. 0 if the item is in the top X%, 1 otherwise.
+        popularity_sorted = self.item_popularity_data().sort_values(by="feedback_num", ascending=False)
+        top_20_percent_idx = int(popular_threshold * len(popularity_sorted) / 100)
+        popular_items = set(popularity_sorted.iloc[:top_20_percent_idx]['item_id'])
+        test['tail'] = np.where(test['item_id'].isin(popular_items), 0, 1)
 
         # numpy array
         train_set = train[["user_id", "item_id"]].values
-        if use_popularity:
-            test_set = test[["user_id", "item_id", "rating", "tail"]].values
-        else:
-            test_set = test[["user_id", "item_id", "rating"]].values
+        test_set = test[["user_id", "item_id", "rating", "tail"]].values
 
         return train_set, test_set
 
