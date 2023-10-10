@@ -1,11 +1,9 @@
 # 環境構築
 ## ライブラリのバージョン
 - python=3.8.17
-- pytorch=2.0.1
-  - windows版のインストールコマンド  
-    ```conda install pytorch torchvision torchaudio pytorch-cuda=11.7 -c pytorch -c nvidia```
-  - CUDA=11.7
-    - CUDA Toolkit=11.7.1
+- pytorch=2.1.0
+  - CUDA=11.8
+  - cuDNN=
 - scikit-learn=1.2.2
 - numpy=1.23.5
 - scipy=1.10.1
