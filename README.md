@@ -3,7 +3,7 @@
 - python=3.8.17
 - pytorch=2.1.0
   - CUDA=11.8
-  - cuDNN=
+  - cuDNN=8.8.5 for CUDA 11.x
 - scikit-learn=1.2.2
 - numpy=1.23.5
 - scipy=1.10.1
