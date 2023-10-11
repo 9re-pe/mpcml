@@ -115,7 +115,7 @@ class BaseTrainer:
             if valid_or_not and (
                 ((ep + 1) % valid_per_epoch == 0) or (ep == n_epoch - 1)
             ):
-                valid_scores_sub = valid_evaluator.score(self.model)
+                valid_scores_sub = valid_evaluator.score(self.model, no_progressbar=self.no_progressbar)
                 valid_scores_sub["epoch"] = ep + 1
                 valid_scores_sub["losses"] = accum_loss / n_batch
                 self.valid_scores = pd.concat([self.valid_scores, valid_scores_sub])
