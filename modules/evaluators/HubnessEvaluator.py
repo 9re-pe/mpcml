@@ -86,7 +86,7 @@ class HubnessEvaluator(BaseEvaluator):
 
     def show_k_occurrence(self, model: BaseEmbeddingModel, k: int):
         users = torch.unique(self.test_set[:, 0])
-        k_occurrence = self.get_k_occurrence(model, users, k, verbose=False)
+        k_occurrence = self.get_k_occurrence(model, users, k, no_progressbar=True)
 
         # make distribution
         distribution = Counter(k_occurrence.values())
