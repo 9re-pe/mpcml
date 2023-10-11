@@ -54,7 +54,7 @@ class BaseTrainer:
         # set evaluators and log dataframe
         valid_or_not = valid_evaluator is not None
         if valid_or_not:
-            self.valid_scores = valid_evaluator.score(self.model)
+            self.valid_scores = valid_evaluator.score(self.model, no_progressbar=self.no_progressbar)
             self.valid_scores["epoch"] = 0
             self.valid_scores["losses"] = np.nan
 
