@@ -15,13 +15,13 @@ class MutualProximityCML(CollaborativeMetricLearning):
             n_item: int,
             distribution: BaseDistribution,
             n_dim: int = 20,
+            n_item_sample: int = 30,
+            n_user_sample: int = 30,
             max_norm: Optional[float] = 1,
             user_embedding_init: Optional[torch.Tensor] = None,
             item_embedding_init: Optional[torch.Tensor] = None,
             user_adaptor: Optional[BaseAdaptor] = None,
             item_adaptor: Optional[BaseAdaptor] = None,
-            n_item_sample: int = 30,
-            n_user_sample: int = 30,
     ):
         super().__init__(
             n_user,
