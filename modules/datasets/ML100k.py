@@ -8,8 +8,6 @@ class ML100k(BaseDataset):
         super().__init__()
         self.DIR_NAME = self.DIR_NAME + 'ml-100k/'
         self.RATING_FILE_NAME = 'u.data'
-        self.GENRE_FILE_NAME = 'u.genre'
-        self.ITEM_FILE_NAME = 'u.item'
 
         # load data
         df_rating = pd.read_csv(
