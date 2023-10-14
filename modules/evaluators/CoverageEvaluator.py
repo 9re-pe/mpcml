@@ -1,7 +1,5 @@
-import numpy as np
 import pandas as pd
 import torch
-from sklearn.metrics import average_precision_score, ndcg_score, recall_score
 from tqdm import tqdm
 
 from ..models import BaseEmbeddingModel
@@ -74,7 +72,7 @@ class CoverageEvaluator(BaseEvaluator):
             recommended_items = set()
 
             # Calculate the recommended item sets for each user and compute their union
-            for uid in tqdm(users, no_progressbar=False):
+            for uid in tqdm(users, disable=no_progressbar):
                 recommended_items |= self.item_set_per_user(model, uid, k)
 
             recommended_items_num = len(recommended_items)

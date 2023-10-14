@@ -74,7 +74,7 @@ class HubnessEvaluator(BaseEvaluator):
         for k in self.ks:
             eval_name = f"hubness@{k}"
 
-            k_occurrence = self.get_k_occurrence(model, users, k)
+            k_occurrence = self.get_k_occurrence(model, users, k, no_progressbar)
             hubness = skew(list(k_occurrence.values()))
 
             score_dict[eval_name] = [hubness]
