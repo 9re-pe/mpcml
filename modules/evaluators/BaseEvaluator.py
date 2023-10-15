@@ -2,6 +2,7 @@ import pandas as pd
 import torch
 
 from ..models.BaseEmbeddingModel import BaseEmbeddingModel
+from ..searches.BaseSearch import BaseSearch
 
 
 class BaseEvaluator:
@@ -16,6 +17,6 @@ class BaseEvaluator:
         """
         self.test_set = test_set
 
-    def score(self, model: BaseEmbeddingModel, no_progressbar=False) -> pd.DataFrame:
+    def score(self, search: BaseSearch, no_progressbar=False) -> pd.DataFrame:
 
         raise NotImplementedError()

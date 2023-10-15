@@ -8,6 +8,7 @@ from ..evaluators.BaseEvaluator import BaseEvaluator
 from ..losses.BaseLoss import BaseLoss
 from ..models.BaseEmbeddingModel import BaseEmbeddingModel
 from ..samplers.BaseSampler import BaseSampler
+from ..searches import BaseSearch
 
 
 class BaseTrainer:
@@ -37,6 +38,7 @@ class BaseTrainer:
         self.criterion = criterion
         self.sampler = sampler
         self.no_progressbar = no_progressbar
+        self.valid_scores = None
 
         if column_names is not None:
             self.column_names = column_names
@@ -47,14 +49,15 @@ class BaseTrainer:
         self,
         n_batch: int = 500,
         n_epoch: int = 10,
+        search: Optional[BaseEvaluator] = None,
         valid_evaluator: Optional[BaseEvaluator] = None,
         valid_per_epoch: int = 5,
     ):
 
         # set evaluators and log dataframe
-        valid_or_not = valid_evaluator is not None
+        valid_or_not = search is not None and valid_evaluator is not None
         if valid_or_not:
-            self.valid_scores = valid_evaluator.score(self.model, no_progressbar=self.no_progressbar)
+            self.valid_scores = valid_evaluator.score(search, no_progressbar=self.no_progressbar)
             self.valid_scores["epoch"] = 0
             self.valid_scores["losses"] = np.nan
 
@@ -115,7 +118,14 @@ class BaseTrainer:
             if valid_or_not and (
                 ((ep + 1) % valid_per_epoch == 0) or (ep == n_epoch - 1)
             ):
-                valid_scores_sub = valid_evaluator.score(self.model, no_progressbar=self.no_progressbar)
+                valid_scores_sub = valid_evaluator.score(search, no_progressbar=self.no_progressbar)
                 valid_scores_sub["epoch"] = ep + 1
                 valid_scores_sub["losses"] = accum_loss / n_batch
                 self.valid_scores = pd.concat([self.valid_scores, valid_scores_sub])
+
+    def valid(
+            self,
+            search: BaseSearch,
+            valid_evaluator: Optional[BaseEvaluator]
+    ):
+        self.valid_scores = valid_evaluator.score(search, no_progressbar=self.no_progressbar)
