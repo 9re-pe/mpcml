@@ -40,12 +40,9 @@ class MutualProximity(BaseSearch):
         params = self.distribution.approximate_params(distances)
 
         # reshape the size to compute MP
-        if self.distribution.name == 'Empirical':
-            params = params.repeat(n_pairs, 1)
-        else:
-            params1 = torch.full((n_pairs,), float(params[0]))
-            params2 = torch.full((n_pairs,), float(params[1]))
-            params = [params1, params2]
+        params1 = torch.full((n_pairs,), float(params[0]))
+        params2 = torch.full((n_pairs,), float(params[1]))
+        params = [params1, params2]
 
         return params
 
