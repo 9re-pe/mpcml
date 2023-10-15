@@ -5,6 +5,7 @@ from tqdm import tqdm
 from typing import List
 
 from ..models import BaseEmbeddingModel
+from ..searches import BaseSearch
 from .BaseEvaluator import BaseEvaluator
 
 
@@ -39,11 +40,11 @@ class UserwiseEvaluator(BaseEvaluator):
 
         raise NotImplementedError()
 
-    def eval_user(self, model: BaseEmbeddingModel, uid: int) -> pd.DataFrame:
+    def eval_user(self, search: BaseSearch, uid: int) -> pd.DataFrame:
         """Method of evaluating for given user.
 
         Args:
-            model (BaseEmbeddingModel): models which have user and item embeddings.
+            search (BaseSearch):
             uid (int): user id
 
         Returns:
@@ -57,17 +58,17 @@ class UserwiseEvaluator(BaseEvaluator):
         li_y_test_user = []
         for col in self.eval_cols:
             li_y_test_user.append(self.test_set[user_indices, col].to("cpu").detach().numpy())
-        y_hat_user = model.predict(test_set_pair).to("cpu").detach().numpy()
+        y_hat_user = search.predict(test_set_pair).to("cpu").detach().numpy()
 
         return self.compute_score(li_y_test_user, y_hat_user)
 
     def score(
-            self, model: BaseEmbeddingModel, reduction="mean", no_progressbar=False
+            self, search: BaseSearch, reduction="mean", no_progressbar=False
     ) -> pd.DataFrame:
         """Method of calculating average score for all users.
 
         Args:
-            model (BaseEmbeddingModel): models which have user and item embeddings.
+            search (BaseSearch):
             reduction (str, optional): reduction method. Defaults to "mean".
             no_progressbar (bool, optional): displaying progress bar or not during evaluating. Defaults to False.
 
@@ -79,7 +80,7 @@ class UserwiseEvaluator(BaseEvaluator):
         df_eval = pd.DataFrame({f"{self.metric_name}@{k}": [] for k in self.ks})
 
         for uid in tqdm(users, disable=no_progressbar):
-            df_eval_sub = self.eval_user(model, uid)
+            df_eval_sub = self.eval_user(search, uid)
             df_eval = pd.concat([df_eval, df_eval_sub])
 
         if reduction == "mean":
