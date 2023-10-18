@@ -50,13 +50,11 @@ class BaseDataset:
     def get_train_and_test_set(
             self,
             neg_pair_weight: int = 10,
-            popular_threshold: int = 20
     ):
         """Convert explicit feedback data to implicit feedback data
 
         Args:
-            neg_pair_weight: Samples X times more negative pairs than positive pairs per user for test data.
-            popular_threshold: Labels items below the top X% as 'tail' items.
+            neg_pair_weight: Samples X times more negative pairs than positive pairs per user for test data
         Returns:
             train_set (Numpy array): user_id and positive item_id pair for training [n_train_samples, 2]
             test_set (Numpy array): user_id, item_id, rating, tail for test [n_test_samples, 4]
@@ -90,15 +88,14 @@ class BaseDataset:
         train = pd.concat(li_df_train)
         test = pd.concat(li_df_test)
 
-        # add a 'tail' column to test set. 0 if the item is in the top X%, 1 otherwise.
-        popularity_sorted = self.item_popularity_data().sort_values(by="feedback_num", ascending=False)
-        top_20_percent_idx = int(popular_threshold * len(popularity_sorted) / 100)
-        popular_items = set(popularity_sorted.iloc[:top_20_percent_idx]['item_id'])
-        test['tail'] = np.where(test['item_id'].isin(popular_items), 0, 1)
+        # Compute the popularity
+        item_popularity = self.item_popularity_data()
+        item_popularity["popularity"] = item_popularity["feedback_num"] / self.n_item
+        test = pd.merge(test, item_popularity[["item_id", "popularity"]], on="item_id", how="left")
 
         # numpy array
         train_set = train[["user_id", "item_id"]].values
-        test_set = test[["user_id", "item_id", "rating", "tail"]].values
+        test_set = test[["user_id", "item_id", "rating", "popularity"]].values
 
         return train_set, test_set
 

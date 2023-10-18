@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import torch
-from sklearn.metrics import recall_score
 from typing import List
 
 from .UserwiseEvaluator import UserwiseEvaluator
@@ -44,18 +43,18 @@ class UnpopularityEvaluator(UserwiseEvaluator):
         else:
             df_eval_sub = pd.DataFrame(
                 {
-                    f"{self.metric_name}@{k}": [self.unpopularity_recall(y_test_user, y_hat_user, k)] for k in self.ks
+                    f"{self.metric_name}@{k}": [self.unpopularity(y_test_user, y_hat_user, k)] for k in self.ks
                 }
             )
 
         return df_eval_sub
 
     @staticmethod
-    def unpopularity_recall(y_test_user: np.ndarray, y_hat_user: np.ndarray, k: int):
+    def unpopularity(y_test_user: np.ndarray, y_hat_user: np.ndarray, k: int):
         """Function for user-wise evaluators calculating Unpopularity@k
 
         Args:
-            y_test_user (np.ndarray): grand truth for the user
+            y_test_user (np.ndarray): popularity score for the item
             y_hat_user (np.ndarray): prediction of relevance
             k (int): a number of top item considered.
 
@@ -64,4 +63,7 @@ class UnpopularityEvaluator(UserwiseEvaluator):
         """
         pred_rank = (-y_hat_user).argsort().argsort() + 1
         pred_topk_flag = (pred_rank <= k).astype(int)
-        return recall_score(y_test_user, pred_topk_flag)
+
+        unpopularity_score = np.sum(pred_topk_flag * (1 - y_test_user))
+
+        return unpopularity_score
