@@ -1,8 +1,12 @@
 # flake8: noqa
 from .BaseEvaluator import BaseEvaluator
-from .UserwiseEvaluator import UserwiseEvaluator
-from .RecallEvaluator import RecallEvaluator
+from .UserwiseEvaluator import (
+    UserwiseEvaluator,
+    recall,
+    unpopularity,
+    unpopularity2,
+    f1_score,
+    f1_score2
+)
 from .CoverageEvaluator import CoverageEvaluator
-from .F1ScoreEvaluator import F1ScoreEvaluator
 from .HubnessEvaluator import HubnessEvaluator
-from .UnpopularityEvaluator import UnpopularityEvaluator
