@@ -81,7 +81,8 @@ class UserwiseEvaluator(BaseEvaluator):
         y_hat_user = search.predict(test_set_pair).to("cpu").detach().numpy()
         truth = self.test_set[user_indices, 2].to("cpu").detach().numpy()
         popularity = self.test_set[user_indices, 3].to("cpu").detach().numpy()
-        y_test_user = [truth, popularity]
+        tail = self.test_set[user_indices, 4].to("cpu").detach().numpy()
+        y_test_user = [truth, popularity, tail]
 
         return self.compute_score(y_test_user, y_hat_user)
 
@@ -176,6 +177,17 @@ def unpopularity2(y_test_user: List[np.ndarray], y_hat_user: np.ndarray, k: int)
     return unpopularity_score
 
 
+def unpopularity3(y_test_user: List[np.ndarray], y_hat_user: np.ndarray, k: int):
+    tail = y_test_user[2]
+    if tail.sum() == 0:
+        return 0
+
+    pred_rank = (-y_hat_user).argsort().argsort() + 1
+    pred_topk_flag = (pred_rank <= k).astype(int)
+
+    return recall_score(tail, pred_topk_flag)
+
+
 def f1_score(y_test_user: List[np.ndarray], y_hat_user, k):
     recall_val = recall(y_test_user, y_hat_user, k)
     unpopularity_val = unpopularity(y_test_user, y_hat_user, k)
@@ -193,3 +205,11 @@ def f1_score2(y_test_user: List[np.ndarray], y_hat_user, k):
     else:
         return (2.0 * recall_val * unpopularity_val) / (recall_val + unpopularity_val)
 
+
+def f1_score3(y_test_user: List[np.ndarray], y_hat_user, k):
+    recall_val = recall(y_test_user, y_hat_user, k)
+    unpopularity_val = unpopularity3(y_test_user, y_hat_user, k)
+    if recall_val + unpopularity_val == 0.0:
+        return 0.0
+    else:
+        return (2.0 * recall_val * unpopularity_val) / (recall_val + unpopularity_val)
