@@ -16,15 +16,15 @@ class NearestNeighborhood(BaseSearch):
             dist : distance for each user and item pair size (n_pairs)
         """
         # set users and items
-        users = pairs[:, :1]
-        items = pairs[:, 1:2]
+        user_id = pairs[:, :1]
+        item_ids = pairs[:, 1:2]
 
         # get embeddings
-        u_emb = self.model.user_embedding(users)
-        i_emb = self.model.item_embedding(items)
+        u_emb = self.model.user_embedding(user_id)
+        i_embs = self.model.item_embedding(item_ids)
 
         # compute distance
-        dist = torch.cdist(u_emb, i_emb).reshape(-1)
+        dist = torch.cdist(u_emb, i_embs).reshape(-1)
 
         # Because all the embeddings fit within a circle whose radius length is r,
         # the distances between embeddings cannot be longer than the diameter of that circle.

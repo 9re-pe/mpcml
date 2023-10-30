@@ -97,19 +97,19 @@ class MutualProximity(BaseSearch):
             MP : MP for each user and item pair size (n_pairs)
         """
         # set users and items
-        users = pairs[:, :1]
-        items = pairs[:, 1:2]
+        user_id = pairs[:, :1]
+        item_ids = pairs[:, 1:2]
 
         # get embeddings
-        u_emb = self.model.user_embedding(users)
-        i_emb = self.model.item_embedding(items)
+        u_emb = self.model.user_embedding(user_id)
+        i_embs = self.model.item_embedding(item_ids)
 
         # compute distance
-        distances = torch.cdist(u_emb, i_emb).reshape(-1)  # [n_pairs]
+        distances = torch.cdist(u_emb, i_embs).reshape(-1)  # [n_pairs]
 
         n_pairs = pairs.size()[0]
-        users_params = self.compute_users_distribution_params(users, n_pairs)  # [n_pairs]
-        items_params = self.compute_items_distribution_params(items, n_pairs)  # [n_pairs]
+        users_params = self.compute_users_distribution_params(user_id, n_pairs)  # [n_pairs]
+        items_params = self.compute_items_distribution_params(item_ids, n_pairs)  # [n_pairs]
         mp = self.compute_mp(distances, users_params, items_params)
 
         return mp
