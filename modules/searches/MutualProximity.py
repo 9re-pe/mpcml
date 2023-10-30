@@ -14,11 +14,13 @@ class MutualProximity(BaseSearch):
             distribution: BaseDistribution,
             n_item_sample: int = 30,
             n_user_sample: int = 30,
+            bias: float = 0.5
     ):
         super().__init__(model)
         self.distribution = distribution
         self.n_item_sample = n_item_sample
         self.n_user_sample = n_user_sample
+        self.bias = bias
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     def compute_users_distribution_params(self, users: torch.Tensor, n_pairs: int):
@@ -85,7 +87,7 @@ class MutualProximity(BaseSearch):
         items_params = [param.to(self.device) for param in items_params]
         x_distribution = self.distribution.get_distribution(users_params)
         y_distribution = self.distribution.get_distribution(items_params)
-        mp = (1 - x_distribution.cdf(distances)) * (1 - y_distribution.cdf(distances))
+        mp = self.bias ** (1.0 - x_distribution.cdf(distances)) * (1.0 - self.bias) ** (1 - y_distribution.cdf(distances))
 
         return mp
 
