@@ -87,7 +87,7 @@ class MutualProximity(BaseSearch):
         items_params = [param.to(self.device) for param in items_params]
         x_distribution = self.distribution.get_distribution(users_params)
         y_distribution = self.distribution.get_distribution(items_params)
-        mp = self.bias ** (1.0 - x_distribution.cdf(distances)) * (1.0 - self.bias) ** (1 - y_distribution.cdf(distances))
+        mp = (1.0 - x_distribution.cdf(distances)) ** self.bias * (1 - y_distribution.cdf(distances)) ** (1.0 - self.bias)
 
         return mp
 
