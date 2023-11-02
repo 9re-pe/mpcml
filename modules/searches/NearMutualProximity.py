@@ -4,7 +4,7 @@ from .BaseSearch import BaseSearch
 from ..models import BaseEmbeddingModel
 
 
-class Mymp(BaseSearch):
+class NearMutualProximity(BaseSearch):
     def __init__(
             self,
             model: BaseEmbeddingModel,

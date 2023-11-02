@@ -4,7 +4,7 @@ import numpy as np
 from .BaseDataset import BaseDataset
 
 
-class ML200mHoge(BaseDataset):
+class ML200mTo100kByUser(BaseDataset):
     def __init__(self):
         super().__init__()
         self.DIR_NAME = self.DIR_NAME + 'ml-20m/'
