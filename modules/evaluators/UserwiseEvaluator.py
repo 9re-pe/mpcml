@@ -213,3 +213,23 @@ def f1_score3(y_test_user: List[np.ndarray], y_hat_user, k):
         return 0.0
     else:
         return (2.0 * recall_val * unpopularity_val) / (recall_val + unpopularity_val)
+
+
+def my_metric1(y_test_user: List[np.ndarray], y_hat_user: np.ndarray, k: int):
+    truth = y_test_user[0]
+    popularity = y_test_user[1]
+    pred_rank = (-y_hat_user).argsort().argsort() + 1
+    pred_topk_flag = (pred_rank <= k).astype(int)
+    score = np.sum(pred_topk_flag * (truth / popularity)) / k
+
+    return score
+
+
+def my_metric2(y_test_user: List[np.ndarray], y_hat_user: np.ndarray, k: int):
+    truth = y_test_user[0]
+    popularity = y_test_user[1]
+    pred_rank = (-y_hat_user).argsort().argsort() + 1
+    pred_topk_flag = (pred_rank <= k).astype(int)
+    score = np.sum(pred_topk_flag * truth * (1 - popularity)) / k
+
+    return score
