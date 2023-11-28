@@ -1,7 +1,11 @@
+# 不要ファイル
 .ipynb_checkpoints
 *.xml
 /.DS_Store
+
+# エディタ・IDE設定
 /.idea
+/.vscode/*
 
 # データセット
 /data/*
@@ -10,3 +14,9 @@
 # ドキュメント
 /docs/*
 !/docs/.gitkeep
+
+# 論文
+/paper/*
+
+# プレゼン資料
+/presentation/*
