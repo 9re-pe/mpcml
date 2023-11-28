@@ -2,7 +2,7 @@
 **/__pycache__/
 .ipynb_checkpoints
 *.xml
-/.DS_Store
+.DS_Store
 
 # エディタ・IDE設定
 /.idea
