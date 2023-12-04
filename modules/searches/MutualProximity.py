@@ -12,14 +12,12 @@ class MutualProximity(BaseSearch):
             self,
             model: BaseEmbeddingModel,
             distribution: BaseDistribution,
-            n_item_sample: int = 30,
-            n_user_sample: int = 30,
-            bias: float = 0.5
+            n_sample: int = 30,
+            bias: float = 0.50
     ):
         super().__init__(model)
         self.distribution = distribution
-        self.n_item_sample = n_item_sample
-        self.n_user_sample = n_user_sample
+        self.n_sample = n_sample
         self.bias = bias
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -33,7 +31,7 @@ class MutualProximity(BaseSearch):
             params1, params2 : probability distribution's parameters size (n_pairs)
         """
         # sample items for probability distribution's parameter estimation
-        sample_items = torch.tensor(self.sample_ids(self.model.n_item, self.n_item_sample)).unsqueeze(1)
+        sample_items = torch.tensor(self.sample_ids(self.model.n_item, self.n_sample)).unsqueeze(1)
         sample_items = sample_items.to(self.device)
 
         i_emb = self.model.item_embedding(sample_items)
@@ -59,9 +57,9 @@ class MutualProximity(BaseSearch):
             params1, params2 : probability distribution's parameters size (n_pairs)
         """
         # sample users for probability distribution's parameter estimation
-        sample_users = torch.zeros((n_pairs, self.n_user_sample), dtype=torch.int64)
+        sample_users = torch.zeros((n_pairs, self.n_sample), dtype=torch.int64)
         for i in range(n_pairs):
-            row = self.sample_ids(self.model.n_user, self.n_user_sample)
+            row = self.sample_ids(self.model.n_user, self.n_sample)
             sample_users[i] = torch.tensor(row)
         sample_users = sample_users.to(self.device)
 
@@ -88,7 +86,8 @@ class MutualProximity(BaseSearch):
         items_params = [param.to(self.device) for param in items_params]
         x_distribution = self.distribution.get_distribution(users_params)
         y_distribution = self.distribution.get_distribution(items_params)
-        mp = (1.0 - x_distribution.cdf(distances)) ** self.bias * (1 - y_distribution.cdf(distances)) ** (1.0 - self.bias)
+        mp = (1.0 - x_distribution.cdf(distances)) ** self.bias * (1 - y_distribution.cdf(distances)) ** (
+                    1.0 - self.bias)
 
         return mp
 
