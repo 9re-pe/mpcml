@@ -4,6 +4,10 @@
 *.xml
 .DS_Store
 
+# 出力ファイル
+experiment/out/*
+!/experiment/out/.gitkeep
+
 # エディタ・IDE設定
 /.idea
 /.vscode/*
