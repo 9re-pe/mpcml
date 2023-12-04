@@ -6,8 +6,7 @@
 
 # 出力ファイル
 experiment/out/*
-!/experiment/out/**
-!/experiment/out/**/.gitkeep
+!/experiment/out/**/*.gitkeep
 
 # エディタ・IDE設定
 /.idea
