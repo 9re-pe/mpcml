@@ -84,6 +84,8 @@ class HubnessEvaluator(BaseEvaluator):
         return score
 
     def show_k_occurrence(self, model: BaseEmbeddingModel, k: int):
+        """Plot the distribution of k-occurrences.
+        """
         users = torch.unique(self.test_set[:, 0])
         k_occurrence = self.get_k_occurrence(model, users, k, no_progressbar=True)
 

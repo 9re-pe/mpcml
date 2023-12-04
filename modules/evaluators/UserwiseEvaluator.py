@@ -30,7 +30,7 @@ class UserwiseEvaluator(BaseEvaluator):
         score_function_dict = {
             "Recall"      : evaluators.recall,
             "Unpopularity": evaluators.unpopularity,
-            "F1-score"    : evaluators.f1_score
+            "Serendipity" : evaluators.serendipity,
         }
 
         arguments of each function must be
@@ -51,6 +51,16 @@ class UserwiseEvaluator(BaseEvaluator):
     def compute_score(
             self, y_test_user: List[np.ndarray], y_hat_user: np.ndarray
     ) -> pd.DataFrame:
+        """Method of computing score.
+        This method make a row of DataFrame which has scores for each metrics and k for the user.
+
+        Args:
+           y_test_user (List[np.ndarray]): [description]
+           y_hat_user (np.ndarray): [description]
+
+        Returns:
+           (pd.DataFrame): a row of DataFrame which has scores for each metrics and k for the user.
+        """
 
         df_eval_sub = pd.DataFrame(
             {
@@ -133,8 +143,9 @@ def recall(y_test_user: List[np.ndarray], y_hat_user: np.ndarray, k: int):
 
     pred_rank = (-y_hat_user).argsort().argsort() + 1
     pred_topk_flag = (pred_rank <= k).astype(int)
+    score = recall_score(truth, pred_topk_flag)
 
-    return recall_score(truth, pred_topk_flag)
+    return score
 
 
 def unpopularity(y_test_user: List[np.ndarray], y_hat_user: np.ndarray, k: int):
@@ -152,13 +163,13 @@ def unpopularity(y_test_user: List[np.ndarray], y_hat_user: np.ndarray, k: int):
     popularity = y_test_user[1]
     pred_rank = (-y_hat_user).argsort().argsort() + 1
     pred_topk_flag = (pred_rank <= k).astype(int)
-    unpopularity_score = np.sum(pred_topk_flag * (1 - popularity)) / k
+    score = np.sum(pred_topk_flag * (1 / popularity)) / k
 
-    return unpopularity_score
+    return score
 
 
 def unpopularity2(y_test_user: List[np.ndarray], y_hat_user: np.ndarray, k: int):
-    """Function for user-wise evaluators calculating Unpopularity@k
+    """Function for user-wise evaluators calculating Unpopularity2@k
 
     Args:
         y_test_user (np.ndarray): popularity score for the item
@@ -172,50 +183,23 @@ def unpopularity2(y_test_user: List[np.ndarray], y_hat_user: np.ndarray, k: int)
     popularity = y_test_user[1]
     pred_rank = (-y_hat_user).argsort().argsort() + 1
     pred_topk_flag = (pred_rank <= k).astype(int)
-    unpopularity_score = np.sum(pred_topk_flag * (-np.log2(popularity))) / k
+    score = np.sum(pred_topk_flag * (1 - popularity)) / k
 
-    return unpopularity_score
-
-
-def unpopularity3(y_test_user: List[np.ndarray], y_hat_user: np.ndarray, k: int):
-    tail = y_test_user[2]
-    if tail.sum() == 0:
-        return 0
-
-    pred_rank = (-y_hat_user).argsort().argsort() + 1
-    pred_topk_flag = (pred_rank <= k).astype(int)
-
-    return recall_score(tail, pred_topk_flag)
+    return score
 
 
-def f1_score(y_test_user: List[np.ndarray], y_hat_user, k):
-    recall_val = recall(y_test_user, y_hat_user, k)
-    unpopularity_val = unpopularity(y_test_user, y_hat_user, k)
-    if recall_val + unpopularity_val == 0.0:
-        return 0.0
-    else:
-        return (2.0 * recall_val * unpopularity_val) / (recall_val + unpopularity_val)
+def serendipity(y_test_user: List[np.ndarray], y_hat_user: np.ndarray, k: int):
+    """Function for user-wise evaluators calculating Unpopularity2@k
 
+    Args:
+        y_test_user (np.ndarray): popularity score for the item
+        y_hat_user (np.ndarray): prediction of relevance
+        k (int): a number of top item considered.
 
-def f1_score2(y_test_user: List[np.ndarray], y_hat_user, k):
-    recall_val = recall(y_test_user, y_hat_user, k)
-    unpopularity_val = unpopularity2(y_test_user, y_hat_user, k)
-    if recall_val + unpopularity_val == 0.0:
-        return 0.0
-    else:
-        return (2.0 * recall_val * unpopularity_val) / (recall_val + unpopularity_val)
+    Returns:
+        (float): recall score
+    """
 
-
-def f1_score3(y_test_user: List[np.ndarray], y_hat_user, k):
-    recall_val = recall(y_test_user, y_hat_user, k)
-    unpopularity_val = unpopularity3(y_test_user, y_hat_user, k)
-    if recall_val + unpopularity_val == 0.0:
-        return 0.0
-    else:
-        return (2.0 * recall_val * unpopularity_val) / (recall_val + unpopularity_val)
-
-
-def my_metric1(y_test_user: List[np.ndarray], y_hat_user: np.ndarray, k: int):
     truth = y_test_user[0]
     popularity = y_test_user[1]
     pred_rank = (-y_hat_user).argsort().argsort() + 1
@@ -225,11 +209,21 @@ def my_metric1(y_test_user: List[np.ndarray], y_hat_user: np.ndarray, k: int):
     return score
 
 
-def my_metric2(y_test_user: List[np.ndarray], y_hat_user: np.ndarray, k: int):
-    truth = y_test_user[0]
-    popularity = y_test_user[1]
+def longtail_rate(y_test_user: List[np.ndarray], y_hat_user: np.ndarray, k: int):
+    """Function for user-wise evaluators calculating longtail_rate@k
+
+    Args:
+        y_test_user (np.ndarray): popularity score for the item
+        y_hat_user (np.ndarray): prediction of relevance
+        k (int): a number of top item considered.
+
+    Returns:
+        (float): recall score
+    """
+
+    longtail = y_test_user[2]
     pred_rank = (-y_hat_user).argsort().argsort() + 1
     pred_topk_flag = (pred_rank <= k).astype(int)
-    score = np.sum(pred_topk_flag * truth * (1 - popularity)) / k
+    score = np.sum(pred_topk_flag * longtail) / k
 
     return score

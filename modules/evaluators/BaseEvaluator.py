@@ -18,5 +18,4 @@ class BaseEvaluator:
         self.test_set = test_set
 
     def score(self, search: BaseSearch, no_progressbar=False) -> pd.DataFrame:
-
         raise NotImplementedError()

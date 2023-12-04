@@ -10,7 +10,7 @@ class CoverageEvaluator(BaseEvaluator):
     """Class of evaluators computing catalogue coverage for recommendations across all users"""
 
     def __init__(
-        self, test_set: torch.Tensor, ks: list = [5]
+            self, test_set: torch.Tensor, ks: list = [5]
     ):
         """Set test data and metrics.
 
@@ -50,7 +50,7 @@ class CoverageEvaluator(BaseEvaluator):
         return item_set
 
     def score(
-        self, model: BaseEmbeddingModel, no_progressbar=False
+            self, model: BaseEmbeddingModel, no_progressbar=False
     ) -> pd.DataFrame:
         """Method of computing catalogue coverage for recommendations across all users.
 
@@ -84,4 +84,3 @@ class CoverageEvaluator(BaseEvaluator):
         score = pd.DataFrame(score_dict)
 
         return score
-
