@@ -30,6 +30,7 @@ class MutualProximity(BaseSearch):
         Returns:
             params1, params2 : probability distribution's parameters size (n_pairs)
         """
+
         # sample items for probability distribution's parameter estimation
         sample_items = torch.tensor(self.sample_ids(self.model.n_item, self.n_sample)).unsqueeze(1)
         sample_items = sample_items.to(self.device)
@@ -56,6 +57,7 @@ class MutualProximity(BaseSearch):
         Returns:
             params1, params2 : probability distribution's parameters size (n_pairs)
         """
+
         # sample users for probability distribution's parameter estimation
         sample_users = torch.zeros((n_pairs, self.n_sample), dtype=torch.int64)
         for i in range(n_pairs):
@@ -98,6 +100,7 @@ class MutualProximity(BaseSearch):
         Returns:
             MP : MP for each user and item pair size (n_pairs)
         """
+
         # set users and items idx
         user = pairs[:, :1]
         items = pairs[:, 1:2]
@@ -125,6 +128,7 @@ class MutualProximity(BaseSearch):
         Returns:
             samples : the indices of sampled users or items
         """
+
         return random.sample(range(n_objects), n_sample)
 
     @staticmethod
@@ -145,6 +149,7 @@ class MutualProximity(BaseSearch):
         Returns:
             distances : size (n_pairs, n_sample)
         """
+
         n, _, _ = tensor1.size()
         n, s, _ = tensor2.size()
 

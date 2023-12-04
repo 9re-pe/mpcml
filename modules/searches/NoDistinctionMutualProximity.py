@@ -32,6 +32,7 @@ class NoDistinctionMutualProximity(MutualProximity):
         Returns:
             params1, params2 : probability distribution's parameters size (n_pairs)
         """
+
         # sample users and items for probability distribution's parameter estimation
         sample_users = torch.tensor(self.sample_ids(self.model.n_user, self.n_user_sample)).unsqueeze(1)
         sample_items = torch.tensor(self.sample_ids(self.model.n_item, self.n_item_sample)).unsqueeze(1)
@@ -64,6 +65,7 @@ class NoDistinctionMutualProximity(MutualProximity):
         Returns:
             params1, params2 : probability distribution's parameters size (n_pairs)
         """
+
         # Sample users and items for probability distribution's parameter estimation
         sample_users = torch.zeros((n_pairs, self.n_user_sample), dtype=torch.int64)
         sample_items = torch.zeros((n_pairs, self.n_item_sample), dtype=torch.int64)
