@@ -1,8 +1,11 @@
-from random import randint
+import random
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
+
+
+random.seed(42)
 
 
 class BaseDataset:
@@ -68,7 +71,7 @@ class BaseDataset:
 
         for user_id, df_group in df_group_by_user:
             # train test split (75:25)
-            df_train, df_test = train_test_split(df_group)
+            df_train, df_test = train_test_split(df_group, random_state=42)
             li_df_train.append(df_train)
             li_df_test.append(df_test)
 
@@ -77,7 +80,7 @@ class BaseDataset:
             negative_pairs = []
             sample_cnt = 0
             while sample_cnt < n_negative_samples:
-                sampled_pair = (user_id, randint(0, self.n_item - 1))
+                sampled_pair = (user_id, random.randint(0, self.n_item - 1))
                 if sampled_pair in pos_pairs_set:
                     continue
                 negative_pairs.append(sampled_pair)

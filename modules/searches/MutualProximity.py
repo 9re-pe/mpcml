@@ -7,6 +7,9 @@ from ..models import BaseEmbeddingModel
 from ..distributions.BaseDistribution import BaseDistribution
 
 
+random.seed(42)
+
+
 class MutualProximity(BaseSearch):
     def __init__(
             self,
