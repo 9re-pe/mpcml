@@ -1,5 +1,4 @@
 from random import randint
-from itertools import product
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -97,8 +96,8 @@ class BaseDataset:
 
         # add a 'tail' column to test set. 0 if the item is in the top X%, 1 otherwise.
         popularity_sorted = self.item_popularity_data().sort_values(by="feedback_num", ascending=False)
-        top_20_percent_idx = int(popular_threshold * len(popularity_sorted) / 100)
-        popular_items = set(popularity_sorted.iloc[:top_20_percent_idx]['item_id'])
+        top_item_idx = int(popular_threshold * len(popularity_sorted) / 100)
+        popular_items = set(popularity_sorted.iloc[:top_item_idx]['item_id'])
         test['tail'] = np.where(test['item_id'].isin(popular_items), 0, 1)
 
         # numpy array
@@ -108,9 +107,7 @@ class BaseDataset:
         return train_set, test_set
 
     def item_popularity_data(self):
-        """
-        各アイテムごとに、Implicit feedbackの観測数をカウントする
-        """
+        """Count the number of implicit feedbacks for each item."""
 
         df_items = pd.DataFrame(
             [i for i in range(self.n_item)],
@@ -133,105 +130,35 @@ class BaseDataset:
         return df_items
 
     def show_item_popularity_dist(self, tail_threshold: int = 20):
-        """
-        Plot the distribution of implicit feedback counts.
-        """
+        """Plot the distribution of implicit feedback counts."""
+
         # Sort df_items by feedback_num in descending order
         sorted_df = self.item_popularity_data().sort_values(by='feedback_num', ascending=False)
 
+        # Number of items in the top X%
+        n_head_items = int(tail_threshold * len(sorted_df) / 100)
+
+        # Get default colors from matplotlib palette
+        default_colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+        head_color = default_colors[0]
+        tail_color = default_colors[1]
+
         # Specify colors for items in the top X% and the rest
-        top_20_percent = int(tail_threshold * len(sorted_df) / 100)
-        colors = ['blue' if i < top_20_percent else 'red' for i in range(len(sorted_df))]
+        colors = [head_color if i < n_head_items else tail_color for i in range(len(sorted_df))]
 
         # Plot the graph
         plt.figure(figsize=(12, 6))
-        bars = plt.bar(range(len(sorted_df)), sorted_df['feedback_num'], color=colors)
+        plt.bar(range(len(sorted_df)), sorted_df['feedback_num'], color=colors)
         plt.xlabel('Items')
         plt.ylabel('Number of Feedbacks')
-        plt.title('Feedback Counts per Item')
         plt.grid(axis='y')
         plt.xlim(0, len(sorted_df))
         plt.xticks([])
-        plt.legend(handles=[bars[0], bars[-1]], labels=[f'Top {tail_threshold}%', f'Bottom {100-tail_threshold}%'])
+
+        # Creating custom handles for the legend
+        head_handle = plt.Rectangle((0, 0), 1, 1, color=head_color)
+        tail_handle = plt.Rectangle((0, 0), 1, 1, color=tail_color)
+        plt.legend(handles=[head_handle, tail_handle],
+                   labels=[f'Head ({tail_threshold}%)', f'Tail ({100 - tail_threshold}%)'])
+
         plt.show()
-
-    # 以下使わないかも-----------------------------------------------------------------------------------------------------
-
-    def item_feature_data_for_eval(self):
-        """Make item feature matrix for evaluation of diversity
-
-        Returns:
-            item_feature_set (Numpy array):
-                item_id, genre0,..., genre18 (Each genre is represented by 0 or 1.) [n_item, 20]
-        """
-
-        genre_col = (5, 24)
-
-        # make header name
-        names = ['item_id']
-        with open(self.DIR_NAME + self.GENRE_FILE_NAME, 'r') as f:
-            lines = f.readlines()
-        for line in lines:
-            genre = line.strip('\n').split('|')[0].strip()
-            if genre:
-                names.append(genre)
-
-        # load data
-        usecols = [0] + list(range(genre_col[0], genre_col[1]))
-        df = pd.read_csv(
-            self.DIR_NAME + self.ITEM_FILE_NAME,
-            sep='|', header=None, index_col=None, usecols=usecols, names=names,
-            encoding='latin1'
-        )
-
-        # numpy array
-        item_feature_set = df.values
-
-        return item_feature_set
-
-    def interaction_data_for_eval(self):
-        """Convert explicit feedback data to user item interaction data for evaluation of novelty
-
-        interaction: Whether the user has ever rated the item.
-
-        Returns:
-            train_set (Numpy array): user_id and positive item_id pair for training [n_train_samples, 2]
-        """
-
-        filename = 'u.data'
-
-        # load data
-        read_data = pd.read_csv(
-            self.dirname + filename,
-            sep='\t', header=None, index_col=None,
-            names=["user_id", "item_id", "rating", "timestamp"]
-        )
-
-        # set user/item ids
-        read_data.user_id -= 1
-        read_data.item_id -= 1
-
-        # convert rating to interaction
-        read_data.rating = (read_data.rating >= 1.0).astype(int)
-
-        # # train test split (75:25)
-        # train, test = train_test_split(read_data)
-
-        # all user item pairs
-        df_all = pd.DataFrame(
-            [[u, i] for u, i in product(range(self.n_user), range(self.n_item))],
-            columns=["user_id", "item_id"]
-        )
-
-        # join train feedback data
-        df_all = pd.merge(
-            df_all,
-            read_data[["user_id", "item_id", "rating"]],
-            on=["user_id", "item_id"],
-            how="left"
-        )
-
-        # numpy array
-        interaction_set = df_all[df_all.rating == 1][["user_id", "item_id"]].values
-
-        return interaction_set
