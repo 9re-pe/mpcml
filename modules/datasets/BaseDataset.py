@@ -13,7 +13,7 @@ class BaseDataset:
         self.pos_pairs = None
         self.n_user = None
         self.n_item = None
-        self.DIR_NAME = '../../data/'
+        self.DIR_NAME = '../../../data/'
 
     @staticmethod
     def preprocess(df_rating):
