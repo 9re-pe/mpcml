@@ -10,12 +10,6 @@ class Gamma(BaseDistribution):
 
     @staticmethod
     def approximate_params(sample_data):
-        """
-        Args:
-            sample_data : distances between objects
-        Returns:
-            Gaussian distribution's parameter size (1) or (n_pairs)
-        """
         avg = torch.mean(sample_data, dim=-1, keepdim=True)
         var = torch.var(sample_data, dim=-1, unbiased=False, keepdim=True)
 
