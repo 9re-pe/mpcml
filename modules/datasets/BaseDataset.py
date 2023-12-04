@@ -13,6 +13,7 @@ class BaseDataset:
         self.pos_pairs = None
         self.n_user = None
         self.n_item = None
+        # path from mpcml/experiment/notebook/
         self.DIR_NAME = '../../../data/'
 
     @staticmethod
