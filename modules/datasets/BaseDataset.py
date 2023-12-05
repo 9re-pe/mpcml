@@ -13,6 +13,7 @@ class BaseDataset:
         self.pos_pairs = None
         self.n_user = None
         self.n_item = None
+        self.n_pos_pairs = None
         # path from mpcml/experiment/notebook/
         self.DIR_NAME = '../../../data/'
 
@@ -49,6 +50,7 @@ class BaseDataset:
         self.pos_pairs = pos_pairs
         self.n_user = pos_pairs.user_id.nunique()
         self.n_item = pos_pairs.item_id.nunique()
+        self.n_pos_pairs = pos_pairs.shape[0]
 
     def get_train_and_test_set(
             self,
