@@ -68,7 +68,7 @@ class CoverageEvaluator(BaseEvaluator):
         all_items_num = len(torch.unique(self.test_set[:, 1]))
 
         for k in self.ks:
-            eval_name = f"coverage@{k}"
+            eval_name = f"Coverage@{k}"
             recommended_items = set()
 
             # Calculate the recommended item sets for each user and compute their union
