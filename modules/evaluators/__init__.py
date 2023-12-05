@@ -6,6 +6,7 @@ from .UserwiseEvaluator import (
     unpopularity,
     unpopularity2,
     serendipity,
+    longtail_rate
 )
 from .CoverageEvaluator import CoverageEvaluator
 from .HubnessEvaluator import HubnessEvaluator
