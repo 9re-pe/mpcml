@@ -77,7 +77,7 @@ class UserwiseEvaluator(BaseEvaluator):
         This method make a row of DataFrame which has scores for each metrics and k for the user.
 
         Args:
-            search (BaseSearch):
+            search (BaseSearch): search class instance
             uid (int): user id
 
         Returns:
@@ -102,7 +102,7 @@ class UserwiseEvaluator(BaseEvaluator):
         """Method of calculating average score for all users.
 
         Args:
-            search (BaseSearch):
+            search (BaseSearch): search class instance
             reduction (str, optional): reduction method. Defaults to "mean".
             no_progressbar (bool, optional): displaying progress bar or not during evaluating. Defaults to False.
 
