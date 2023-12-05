@@ -210,7 +210,7 @@ def serendipity(y_test_user: List[np.ndarray], y_hat_user: np.ndarray, k: int):
 
 
 def longtail_rate(y_test_user: List[np.ndarray], y_hat_user: np.ndarray, k: int):
-    """Function for user-wise evaluators calculating Longtail_rate@k
+    """Function for user-wise evaluators calculating Long-tail_rate@k
 
     Args:
         y_test_user (np.ndarray): popularity score for the item
