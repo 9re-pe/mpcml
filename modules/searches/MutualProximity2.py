@@ -108,7 +108,7 @@ class MutualProximity2(BaseSearch):
         distances = torch.cdist(u_emb, i_embs).reshape(-1)  # [n_pairs]
 
         n_pairs = pairs.size()[0]
-        users_params = self.compute_users_distribution_params(user, n_pairs)  # [n_pairs]
+        users_params = self.compute_users_distribution_params(distances, n_pairs)  # [n_pairs]
         items_params = self.compute_items_distribution_params(items, n_pairs)  # [n_pairs]
         mp = self.compute_mp(distances, users_params, items_params)
 
