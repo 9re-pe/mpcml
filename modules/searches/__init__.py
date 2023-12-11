@@ -1,4 +1,5 @@
 from .BaseSearch import BaseSearch
 from .NearestNeighborhood import NearestNeighborhood
 from .MutualProximity import MutualProximity
+from .MutualProximity2 import MutualProximity2
 from .NoDistinctionMutualProximity import NoDistinctionMutualProximity
