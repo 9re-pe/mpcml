@@ -24,24 +24,16 @@ class MutualProximity(BaseSearch):
         self.bias = bias
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    def compute_users_distribution_params(self, users: torch.Tensor, n_pairs: int):
+    def compute_users_distribution_params(self, distances: torch.Tensor, n_pairs: int):
         """Compute the probability distribution's parameters for users.
 
         Args:
-            users : tensor of indices for users size (n_pairs, 1)
+            distances : tensor of indices for users size (n_pairs, 1)
             n_pairs : the number of user and item pairs
         Returns:
             params1, params2 : probability distribution's parameters size (n_pairs)
         """
 
-        # sample items for probability distribution's parameter estimation
-        sample_items = torch.tensor(self.sample_ids(self.model.n_item, self.n_sample)).unsqueeze(1)
-        sample_items = sample_items.to(self.device)
-
-        i_emb = self.model.item_embedding(sample_items)
-        u_emb = self.model.user_embedding(users)[0].unsqueeze(0).repeat(i_emb.size()[0], 1, 1)
-
-        distances = torch.cdist(u_emb, i_emb).reshape(-1)
         params = self.distribution.approximate_params(distances)
 
         # reshape the size to compute MP
@@ -116,7 +108,7 @@ class MutualProximity(BaseSearch):
         distances = torch.cdist(u_emb, i_embs).reshape(-1)  # [n_pairs]
 
         n_pairs = pairs.size()[0]
-        users_params = self.compute_users_distribution_params(user, n_pairs)  # [n_pairs]
+        users_params = self.compute_users_distribution_params(distances, n_pairs)  # [n_pairs]
         items_params = self.compute_items_distribution_params(items, n_pairs)  # [n_pairs]
         mp = self.compute_mp(distances, users_params, items_params)
 
