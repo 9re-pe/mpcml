@@ -6,6 +6,7 @@ from tqdm import tqdm
 
 from ..evaluators.BaseEvaluator import BaseEvaluator
 from ..losses.BaseLoss import BaseLoss
+from ..losses.MinorTripletLoss import MinorTripletLoss
 from ..models.BaseEmbeddingModel import BaseEmbeddingModel
 from ..samplers.BaseSampler import BaseSampler
 from ..searches import BaseSearch
@@ -87,7 +88,12 @@ class BaseTrainer:
                     embeddings_dict = self.model(users, pos_items, neg_items)
 
                     # compute losses
-                    loss = self.criterion(embeddings_dict, batch, self.column_names)
+                    if isinstance(self.criterion, MinorTripletLoss):
+                        # Miner CML
+                        embeddings_dict["feedback_num"] = self.criterion.feedback_num(pos_items)
+                        loss = self.criterion(embeddings_dict, batch, self.column_names)
+                    else:
+                        loss = self.criterion(embeddings_dict, batch, self.column_names)
 
                     # adding losses for domain adaptation
                     if self.model.user_adaptor is not None:

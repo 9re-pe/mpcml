@@ -10,6 +10,8 @@ random.seed(42)
 
 class BaseDataset:
     def __init__(self):
+        self.test = None
+        self.train = None
         self.pos_pairs = None
         self.n_user = None
         self.n_item = None
@@ -96,15 +98,19 @@ class BaseDataset:
         test = pd.concat(li_df_test)
 
         # Compute the popularity
-        item_popularity = self.item_popularity_data()
+        item_popularity = self.feedback_num_data()
         item_popularity["popularity"] = item_popularity["feedback_num"] / self.n_item
         test = pd.merge(test, item_popularity[["item_id", "popularity"]], on="item_id", how="left")
 
         # add a 'tail' column to test set. 0 if the item is in the top X%, 1 otherwise.
-        popularity_sorted = self.item_popularity_data().sort_values(by="feedback_num", ascending=False)
+        popularity_sorted = self.feedback_num_data().sort_values(by="feedback_num", ascending=False)
         top_item_idx = int(popular_threshold * len(popularity_sorted) / 100)
         popular_items = set(popularity_sorted.iloc[:top_item_idx]['item_id'])
         test['tail'] = np.where(test['item_id'].isin(popular_items), 0, 1)
+        
+        # save on instance variables
+        self.train = train
+        self.test = test
 
         # numpy array
         train_set = train[["user_id", "item_id"]].values
@@ -112,7 +118,7 @@ class BaseDataset:
 
         return train_set, test_set
 
-    def item_popularity_data(self):
+    def feedback_num_data(self):
         """Count the number of implicit feedbacks for each item."""
 
         df_items = pd.DataFrame(
@@ -120,11 +126,28 @@ class BaseDataset:
             columns=["item_id"]
         )
 
-        # Filter rows from read_data where rating is 1
-        filtered_data = self.pos_pairs[self.pos_pairs.rating == 1]
+        # Count by item_id
+        feedback_count = self.pos_pairs.groupby('item_id').size().reset_index(name='feedback_num')
+
+        # Merge feedback_count into df_items
+        df_items = pd.merge(df_items, feedback_count, on='item_id', how='left')
+
+        # Replace NaN with 0
+        df_items['feedback_num'].fillna(0, inplace=True)
+        df_items['feedback_num'] = df_items['feedback_num'].astype(int)
+
+        return df_items
+
+    def feedback_num_train_data(self):
+        """Count the number of implicit feedbacks in train data for each item. (avoid data leakage)"""
+
+        df_items = pd.DataFrame(
+            [i for i in range(self.n_item)],
+            columns=["item_id"]
+        )
 
         # Count by item_id
-        feedback_count = filtered_data.groupby('item_id').size().reset_index(name='feedback_num')
+        feedback_count = self.train.groupby('item_id').size().reset_index(name='feedback_num')
 
         # Merge feedback_count into df_items
         df_items = pd.merge(df_items, feedback_count, on='item_id', how='left')
@@ -139,7 +162,7 @@ class BaseDataset:
         """Plot the distribution of implicit feedback counts."""
 
         # Sort df_items by feedback_num in descending order
-        sorted_df = self.item_popularity_data().sort_values(by='feedback_num', ascending=False)
+        sorted_df = self.feedback_num_data().sort_values(by='feedback_num', ascending=False)
 
         # Number of items in the top X%
         n_head_items = int(tail_threshold * len(sorted_df) / 100)
