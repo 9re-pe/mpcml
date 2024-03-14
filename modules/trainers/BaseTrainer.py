@@ -1,4 +1,5 @@
 from typing import Optional
+import torch
 from torch import optim
 import numpy as np
 import pandas as pd
@@ -90,7 +91,7 @@ class BaseTrainer:
                     # compute losses
                     if isinstance(self.criterion, MinorTripletLoss):
                         # Miner CML
-                        embeddings_dict["feedback_num"] = self.criterion.feedback_num(pos_items)
+                        embeddings_dict["pos_items"] = pos_items
                         loss = self.criterion(embeddings_dict, batch, self.column_names)
                     else:
                         loss = self.criterion(embeddings_dict, batch, self.column_names)

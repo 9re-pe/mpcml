@@ -1,3 +1,4 @@
+from typing import Optional
 import torch
 from torch import nn
 import pandas as pd
@@ -9,14 +10,25 @@ class MinorTripletLoss(BaseLoss):
     """Class of Triplet Loss taking sum of negative sample."""
 
     def __init__(
-            self, feedback_num: pd.DataFrame, margin: float = 1, a: float = 1, b: float = 0.5, regularizers: list = []
+            self,
+            feedback_num: pd.DataFrame,
+            margin: float = 1,
+            a: float = 1,
+            b: float = 0.5,
+            regularizers: list = [],
+            device: Optional[torch.device] = None
     ):
         super().__init__(regularizers)
         self.margin = margin
         self.a = a
         self.b = b
         self.ReLU = nn.ReLU()
-        self.feedback_num = nn.Embedding(num_embeddings=feedback_num['item_id'].max() + 1, embedding_dim=1)
+        self.feedback_num_dict = feedback_num.set_index('item_id')['feedback_num'].to_dict()
+
+        if device is None:
+            self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        else:
+            self.device = device
 
     def main(
         self, embeddings_dict: dict, batch: torch.Tensor, column_names: dict
@@ -44,7 +56,9 @@ class MinorTripletLoss(BaseLoss):
             embeddings_dict["user_embedding"], embeddings_dict["neg_item_embedding"]
         )
 
-        feedback_num = embeddings_dict["feedback_num"]
+        feedback_num = torch.tensor(
+            [self.feedback_num_dict[item_id] for item_id in embeddings_dict["pos_items"].cpu().numpy().flatten().tolist()]
+        ).view(-1, 1, 1).to(self.device).to(self.device)
         alpha = self.a * feedback_num ** (-self.b)
 
         tripletloss = alpha * self.ReLU(self.margin + pos_dist ** 2 - neg_dist ** 2)
