@@ -1,5 +1,6 @@
-# 環境構築
-## ライブラリのバージョン
+<img width="700" alt="image" src="https://github.com/9re-pe/9re-pe/assets/88223184/5cbf9954-968f-43c7-96bc-d72023057c3c">
+
+# env
 - python=3.8.17
 - pytorch=2.1.0
   - CUDA=11.8
