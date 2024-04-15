@@ -14,6 +14,7 @@
 
 # paper
 https://confit.atlas.jp/guide/event/deim2024/subject/T3-B-6-03/detail?lang=ja
+
 🏆筑波大学情報学群情報メディア創成学類 学類長表彰 受賞
 
 # ref
