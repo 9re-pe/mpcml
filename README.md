@@ -14,6 +14,7 @@
 
 # paper
 https://confit.atlas.jp/guide/event/deim2024/subject/T3-B-6-03/detail?lang=ja
+🏆筑波大学情報学群情報メディア創成学類 学類長表彰 受賞
 
 # ref
 [1] Cheng-Kang Hsieh, Longqi Yang, Yin Cui, Tsung-Yi Lin, Serge Belongie, and Deborah Estrin. Collaborative metric learning. In Proceedings of the 26th International Conference on World Wide Web, WWW ’17, p. 193–201, Republic and Canton of Geneva,CHE, 2017. International World Wide Web Conferences Steering Committee.
